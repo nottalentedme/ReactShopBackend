@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using ShopBackend.Helpers;
 
@@ -8,15 +8,30 @@ namespace ShopBackend.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        [HttpGet("One")]
+        [HttpGet("One/{id}")]
         public IActionResult GetOneProducts(int id)
         {
-            var product = FakeDatabase._products.Where(x=>x.Id == id).FirstOrDefault();
+            var product = FakeDatabase._products.FirstOrDefault(x => x.Id == id);
             if (product == null)
             {
-                return Ok("Товара нет");
+                return NotFound(new { message = "Товар не найден" });
             }
             return Ok(product);
+        }
+        [HttpPost("Buy/{id}")]
+        public IActionResult BuyProduct(int id)
+        {
+            var product = FakeDatabase._products.FirstOrDefault(x => x.Id == id);
+            if (product == null)
+            {
+                return NotFound(new { message = "Товар не найден" });
+            }
+            if (product.Quantity <= 0)
+            {
+                return BadRequest(new { message = "Нет в наличии" });
+            }
+            product.Quantity -= 1;
+            return Ok(new { message = "Товар куплен", product });
         }
 
         [HttpGet("All")]
